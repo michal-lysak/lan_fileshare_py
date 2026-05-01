@@ -1,0 +1,5 @@
+[project]
+name = "PySide QtQuick Project"
+
+[tool.pyside6-project]
+files = ["Backend/discovery.py", "main.py", "main.qml", "resources.qrc", "ui/Icons/Computer4x.png", "ui/Icons/qml/ComputerIcon.qml"]
