@@ -9,6 +9,8 @@ Window {
     title: qsTr("Nearby File Sender")
     color: "#141414"
 
+    property string senderIp: ""
+
     Connections {
         target: backend
 
@@ -18,6 +20,60 @@ Window {
             deviceModel.append({
                 "name": name,
                 "ip": ip
+            })
+        }
+
+        function onConnectionStateChanged() {
+            conState = backend.connectionState
+
+
+            if (conState === "connecting") {
+                loader.source = "FileShare.qml"
+            }
+        }
+
+        function onPacketReceived(ip, packetType) {
+            senderIp = ip
+            if (packetType === "CONNECT_REQUEST")  {
+                overlay.active = true
+                overlay.source = "ui/ConnectionRequest.qml"
+            }
+            if (packetType === "CONNECT_ACCEPTED") {
+
+            }
+            if (packetType === "CONNECT_REJECTED") {
+
+            }
+        }
+    }
+
+    Loader {
+        id: loader
+        anchors.fill: parent
+        z: 3
+
+        onLoaded: {
+            loader.item.senderRequest = senderIp
+        }
+    }
+
+    Loader {
+        id: overlay
+        anchors.fill: parent
+        z: 4
+        active: false
+
+        onLoaded: {
+            item.senderRequest = senderIp
+
+            item.requestDiscard.connect(function() {
+                overlay.source = ""
+            })
+
+            item.requestAccept.connect(function() {
+                overlay.source = ""
+            })
+            item.doConnection.connect(function() {
             })
         }
     }
@@ -60,6 +116,7 @@ Window {
                             anchors.fill: parent
                             onClicked: {
                                 console.log("Clicked:", name, ip)
+                                backend.conRequest(ip)
                             }
                         }
 

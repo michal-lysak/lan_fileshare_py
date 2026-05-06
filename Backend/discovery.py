@@ -1,42 +1,80 @@
 # This Python file uses the following encoding: utf-8
 
-# if __name__ == "__main__":
-#     pass
-
+from PySide6.QtCore import QObject, Signal, Property, Slot
+from PySide6.QtNetwork import QUdpSocket, QHostAddress
 import socket
-from PySide6.QtCore import QObject, Signal
+
 
 
 class DiscoveryWorker(QObject):
-    deviceFound = Signal(str, str)  # Signal to emit when a device is found
+    deviceFound = Signal(str, str)  # name, ip
+    stateChanged = Signal(str)
+    packetReceived_Signal = Signal(str, str)
     
+
+    def __init__(self):
+        
+        super().__init__()
+        self.socket = QUdpSocket(self)
+        self.devices = set()
+
     def start(self):
+        
         PORT = 9999
+        # Bind UDP socket (Qt way)
+        self.socket.bind(
+            QHostAddress.Any,
+            PORT,
+            QUdpSocket.ShareAddress | QUdpSocket.ReuseAddressHint
+        )
 
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(("0.0.0.0", PORT))
+        self.socket.readyRead.connect(self.processPendingDatagrams)
+        self.sendDiscovery()
+        
+        print("Listening for devices (QUdpSocket)...")
 
-        print("Listenning for devices...")
 
-        devices = set()
+    def sendDiscovery(self):
 
-        while True:
-            data, addr = sock.recvfrom(1024)
-            message = data.decode()
+        hostname = socket.gethostname()
+        message = f"DISCOVER|{hostname}".encode()
+
+        self.socket.writeDatagram(
+            message,
+            QHostAddress.Broadcast,
+            9999
+        )
+
+        print("Broadcast sent:", message.decode())
+
+
+    @Slot(str)
+    def conRequest(self, ip: str):
+        hostname = socket.gethostname()
+        message = f"CONNECT_REQUEST|{hostname}".encode()
+        
+        self.socket.writeDatagram(message, QHostAddress(ip), 9999)
+        
+    def processPendingDatagrams(self):
+        while self.socket.hasPendingDatagrams():
+            datagram, host, port = self.socket.readDatagram(
+                self.socket.pendingDatagramSize()
+            )
+
+            message = datagram.data().decode()
+            ip = host.toString()
 
             if message.startswith("DISCOVER"):
                 parts = message.split("|")
                 name = parts[1] if len(parts) > 1 else "Unknown"
 
+                if ip not in self.devices:
+                    self.devices.add(ip)
+                    print(f"Found device: {name} -> {ip}")
+                    self.deviceFound.emit(name, ip)
 
-                if addr[0] not in devices:
-                    devices.add(addr[0])
-                    print(f"Found device: {name} -> {addr[0]}")
+            elif message.startswith("CONNECT_"):
+                print(f"Connection request from {ip}")
 
-                    self.deviceFound.emit(name, addr[0])
-
-class Backend(QObject):
-    deviceDiscovered = Signal(str, str) #name, ip
-
-    def __init__(self):
-        super().__init__()
+                packet_type = message.split("|")[0]
+                self.packetReceived_Signal.emit(ip, packet_type)
