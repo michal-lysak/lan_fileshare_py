@@ -2,7 +2,7 @@ import os
 from PySide6.QtCore import (QObject, QFile, QFileInfo, QDir, QStandardPaths,
                             QDataStream, QByteArray, QIODevice, QMimeDatabase, Slot)
 from PySide6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
-
+from PySide6.QtCore import QObject, Signal, Property, Slot
 class TCPManager(QObject):
     def __init__(self, backend, parent=None):
         super().__init__(parent)
@@ -10,6 +10,8 @@ class TCPManager(QObject):
         self.tcpServer = None
         self.tcpSocket = None
         self.m_clientSockets = []
+
+        self.tcpStartServer = Signal(str)
 
         # Replaces the C++ 'static' variables used in onReadyRead
         self._reset_receive_state()
@@ -21,7 +23,9 @@ class TCPManager(QObject):
         self.currentFile = None
         self.bytesReceived = 0
 
-    def startServer(self, port: int):
+    def startServer(self):
+        port = 45454
+        print("TCP SERVER STARTING...")
         self.tcpServer = QTcpServer(self)
         self.tcpServer.newConnection.connect(self.onNewConnection)
 
@@ -31,12 +35,14 @@ class TCPManager(QObject):
 
         print(f"Server started on port {port}")
 
-    def connectToHost(self, ip: str, port: int = 45454):
+    def connectToHost(self, ip: str):
         # Assuming your StatusClass is accessible somehow in Python
         # if self.m_backend.connectionState() == StatusClass.TCP_CONNECTED:
         #     print("TCP: Another device tried connection, declined - already connected")
         #     return
-
+        print("Trying to connect on server")
+    
+        port = 45454
         if not self.tcpSocket:
             self.tcpSocket = QTcpSocket(self)
             self.tcpSocket.readyRead.connect(self.onReadyRead)

@@ -10,6 +10,10 @@ Window {
     color: "#141414"
 
     property string senderIp: ""
+    property string message: ""
+
+    signal sendPacket(string message, string ip)
+
 
     Connections {
         target: backend
@@ -39,7 +43,7 @@ Window {
                 overlay.source = "ui/ConnectionRequest.qml"
             }
             if (packetType === "CONNECT_ACCEPTED") {
-
+                backend.tcpConnectOnServer(senderIp)
             }
             if (packetType === "CONNECT_REJECTED") {
 
@@ -68,12 +72,20 @@ Window {
 
             item.requestDiscard.connect(function() {
                 overlay.source = ""
+                message = "CONNECTION_REJECTED"
+                backend.sendPacket(senderIp, message)
             })
 
             item.requestAccept.connect(function() {
                 overlay.source = ""
+                message = "CONNECTION_ACCEPTED"
+                backend.sendPacket(senderIp, message)
+
+                backend.tcpStartServer(senderIp)
             })
+
             item.doConnection.connect(function() {
+
             })
         }
     }

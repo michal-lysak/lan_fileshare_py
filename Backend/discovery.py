@@ -1,15 +1,17 @@
 # This Python file uses the following encoding: utf-8
 
+from Backend import tcp_manager
 from PySide6.QtCore import QObject, Signal, Property, Slot
 from PySide6.QtNetwork import QUdpSocket, QHostAddress
 import socket
-
+from Backend.tcp_manager import TCPManager
 
 
 class DiscoveryWorker(QObject):
     deviceFound = Signal(str, str)  # name, ip
     stateChanged = Signal(str)
     packetReceived_Signal = Signal(str, str)
+    packetSend_Signal = Signal(str)
     
 
     def __init__(self):
@@ -48,7 +50,12 @@ class DiscoveryWorker(QObject):
         print("Broadcast sent:", message.decode())
 
 
-    @Slot(str)
+    @Slot(str, str)
+    def sendPacket(self, ip: str, message: str):
+        print(message, ip)
+
+        self.socket.writeDatagram(message.encode(), QHostAddress(ip), 9999)
+
     def conRequest(self, ip: str):
         hostname = socket.gethostname()
         message = f"CONNECT_REQUEST|{hostname}".encode()

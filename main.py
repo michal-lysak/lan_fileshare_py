@@ -7,6 +7,7 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from Backend.backend import Backend
 from Backend.discovery import DiscoveryWorker
+from Backend.tcp_manager import TCPManager
 from PySide6.QtCore import QThread, QObject, Signal
 
 
@@ -16,6 +17,7 @@ if __name__ == "__main__":
     qml_file = Path(__file__).resolve().parent / "main.qml"
 
     backend = Backend()
+    tcpManager = TCPManager(backend)
 
     worker = DiscoveryWorker()
     thread = QThread()
@@ -28,7 +30,11 @@ if __name__ == "__main__":
     worker.packetReceived_Signal.connect(backend.onPacketReceived)
     worker.stateChanged.connect(backend.setConnectionState)
 
+    backend.tcpStartServer.connect(tcpManager.startServer)
+    backend.tcpConnectOnServer.connect(tcpManager.connectToHost)
+
     backend.conRequest_Signal.connect(worker.conRequest)
+    backend.sendPacket.connect(worker.sendPacket)
 
     thread.start()
     engine.rootContext().setContextProperty("backend", backend)
