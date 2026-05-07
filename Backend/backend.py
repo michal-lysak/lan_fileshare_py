@@ -5,6 +5,10 @@ class Backend(QObject):
     connectionStateChanged = Signal()
     conRequest_Signal = Signal(str)
     packetReceived = Signal(str, str)
+    sendPacket = Signal(str, str)
+
+    tcpStartServer = Signal(str)
+    tcpConnectOnServer = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -34,3 +38,7 @@ class Backend(QObject):
     def onPacketReceived(self, ip: str, packet_type: str):
         print(f"DEBUG: Backend relaying {packet_type} from {ip}")
         self.packetReceived.emit(ip, packet_type)
+
+    @Slot(str, str)
+    def sendPacketSignal(self, ip: str, message: str):
+        self.sendPacket.emit(ip, message)
