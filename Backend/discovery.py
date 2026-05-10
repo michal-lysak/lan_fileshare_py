@@ -85,7 +85,7 @@ class DiscoveryWorker(QObject):
 
                 packet_type = message.split("|")[0]
                 self.packetReceived_Signal.emit(ip, packet_type)
-            elif message.startsWith("CONNECTION_ACCEPTED"):
+            elif message.startswith("CONNECTION_ACCEPTED"):
                 print(f"Connection accepted from {ip}")
 
                 packet_type = message.split("|")[0]
