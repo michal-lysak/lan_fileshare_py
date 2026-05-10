@@ -7,7 +7,7 @@ class Backend(QObject):
     packetReceived = Signal(str, str)
     sendPacket = Signal(str, str)
 
-    tcpStartServer = Signal(str)
+    tcpStartServer = Signal()
     tcpConnectOnServer = Signal(str)
 
     def __init__(self):
