@@ -80,12 +80,12 @@ class DiscoveryWorker(QObject):
                     print(f"Found device: {name} -> {ip}")
                     self.deviceFound.emit(name, ip)
 
-            elif message == "CONNECTION_REQUEST":
+            elif message.startswith("CONNECTION_REQUEST"):
                 print(f"Connection request from {ip}")
 
                 packet_type = message.split("|")[0]
                 self.packetReceived_Signal.emit(ip, packet_type)
-            elif message == "CONNECTION_ACCEPTED":
+            elif message.startsWith("CONNECTION_ACCEPTED"):
                 print(f"Connection accepted from {ip}")
 
                 packet_type = message.split("|")[0]
