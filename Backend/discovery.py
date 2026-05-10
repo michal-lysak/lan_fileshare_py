@@ -58,7 +58,7 @@ class DiscoveryWorker(QObject):
 
     def conRequest(self, ip: str):
         hostname = socket.gethostname()
-        message = f"CONNECT_REQUEST|{hostname}".encode()
+        message = f"CONNECTION_REQUEST|{hostname}".encode()
         
         self.socket.writeDatagram(message, QHostAddress(ip), 9999)
         
@@ -80,8 +80,13 @@ class DiscoveryWorker(QObject):
                     print(f"Found device: {name} -> {ip}")
                     self.deviceFound.emit(name, ip)
 
-            elif message.startswith("CONNECT_"):
+            elif message == "CONNECTION_REQUEST":
                 print(f"Connection request from {ip}")
+
+                packet_type = message.split("|")[0]
+                self.packetReceived_Signal.emit(ip, packet_type)
+            elif message == "CONNECTION_ACCEPTED":
+                print(f"Connection accepted from {ip}")
 
                 packet_type = message.split("|")[0]
                 self.packetReceived_Signal.emit(ip, packet_type)
