@@ -31,21 +31,21 @@ Window {
             conState = backend.connectionState
 
 
-            if (conState === "connecting") {
+            if (conState === "connected") {
                 loader.source = "FileShare.qml"
             }
         }
 
         function onPacketReceived(ip, packetType) {
             senderIp = ip
-            if (packetType === "CONNECT_REQUEST")  {
+            if (packetType === "CONNECTION_REQUEST")  {
                 overlay.active = true
                 overlay.source = "ui/ConnectionRequest.qml"
             }
-            if (packetType === "CONNECT_ACCEPTED") {
+            if (packetType === "CONNECTION_ACCEPTED") {
                 backend.tcpConnectOnServer(senderIp)
             }
-            if (packetType === "CONNECT_REJECTED") {
+            if (packetType === "CONNECTION_REJECTED") {
 
             }
         }
@@ -79,9 +79,9 @@ Window {
             item.requestAccept.connect(function() {
                 overlay.source = ""
                 message = "CONNECTION_ACCEPTED"
-                backend.sendPacket(senderIp, message)
+                backend.tcpStartServer()
 
-                backend.tcpStartServer(senderIp)
+                backend.sendPacket(senderIp, message)
             })
 
             item.doConnection.connect(function() {
