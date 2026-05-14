@@ -14,7 +14,7 @@ from PySide6.QtCore import QThread, QObject, Signal
 if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
-    qml_file = Path(__file__).resolve().parent / "main.qml"
+    qml_file = Path(__file__).resolve().parent / "ui" / "main.qml"
 
     backend = Backend()
     tcpManager = TCPManager(backend)
