@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import "qrc:/ui/Icons/qml"
+
 
 Window {
     width: 640
@@ -39,8 +39,7 @@ Window {
         function onPacketReceived(ip, packetType) {
             senderIp = ip
             if (packetType === "CONNECTION_REQUEST")  {
-                overlay.active = true
-                overlay.source = "ui/ConnectionRequest.qml"
+                overlay.source = "ConnectionRequest.qml"
             }
             if (packetType === "CONNECTION_ACCEPTED") {
                 backend.tcpConnectOnServer(senderIp)
@@ -65,7 +64,6 @@ Window {
         id: overlay
         anchors.fill: parent
         z: 4
-        active: false
 
         onLoaded: {
             item.senderRequest = senderIp
@@ -100,54 +98,13 @@ Window {
         anchors.centerIn: parent
 
         Rectangle {
-            color: "#141414"
+            color: "#202020"
             width: 500
             height: 350
             radius: 20
 
-            Rectangle {
-                color: "#202020"
-                anchors.fill: parent
-                anchors.margins: 20
-                radius: 20
-
-                GridView {
-                    anchors.fill: parent
-                    anchors.margins: 20
-                    cellWidth: 120
-                    cellHeight: 120
-                    model: deviceModel
-
-                    delegate: Rectangle {
-                        width: 100
-                        height: 100
-                        radius: 20
-                        color: "#333333"
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                console.log("Clicked:", name, ip)
-                                backend.conRequest(ip)
-                            }
-                        }
-
-                        Column {
-                            spacing: 6
-                            anchors.centerIn: parent
-
-                            ComputerIcon {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                            }
-
-                            Text {
-                                text: name
-                                color: "white"
-                                anchors.horizontalCenter: parent.horizontalCenter
-                            }
-                        }
-                    }
-                }
+            DevicesGrid {
+                model: deviceModel
             }
         }
     }
