@@ -3,6 +3,7 @@ from PySide6.QtCore import (QObject, QFile, QFileInfo, QDir, QStandardPaths,
                             QDataStream, QByteArray, QIODevice, QMimeDatabase, Slot)
 from PySide6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 from PySide6.QtCore import QObject, Signal, Property, Slot
+
 class TCPManager(QObject):
     def __init__(self, backend, parent=None):
         super().__init__(parent)
@@ -51,7 +52,7 @@ class TCPManager(QObject):
             # Using a lambda/local function for the connected signal
             def on_connected():
                 print("Connected to server!")
-                # self.m_backend.setConnectionState(StatusClass.TCP_CONNECTED)
+                self.m_backend.setConnectionState("connected")
             
             self.tcpSocket.connected.connect(on_connected)
 
@@ -60,7 +61,7 @@ class TCPManager(QObject):
     def sendData(self):
         print("Sending data...")
         # Assuming m_filesManager is a Python property/attribute on your backend
-        files = self.m_backend.m_filesManager.m_selectedFiles
+        files = self.m_backend._selectedFiles
         for file_path in files:
             self.sendFile(file_path)
 
@@ -135,6 +136,7 @@ class TCPManager(QObject):
 
         self.m_clientSockets.append(client_socket)
         print(f"New client connected from {client_socket.peerAddress().toString()}")
+        self.m_backend.setConnectionState("connected")
 
     @Slot()
     def onReadyRead(self):
@@ -200,7 +202,7 @@ class TCPManager(QObject):
             # Step 4: File complete
             if self.bytesReceived >= self.currentHeader["fileSize"]:
                 self.currentFile.close()
-                print(f"✅ File received successfully: {self.currentHeader['fileName']}")
+                print(f" File received successfully: {self.currentHeader['fileName']}")
                 
                 # Reset state machine for the next potential file
                 self._reset_receive_state()

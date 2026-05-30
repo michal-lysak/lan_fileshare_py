@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-
-
+import QtQuick.Dialogs
 Window {
     width: 640
     height: 480
@@ -12,7 +11,28 @@ Window {
     property string senderIp: ""
     property string message: ""
 
+    property var filePaths: backend.selectedFiles
+
     signal sendPacket(string message, string ip)
+
+    FileDialog {
+        id: fileDialog
+        fileMode: FileDialog.OpenFiles
+
+        onAccepted: {
+            console.log("Selected files:", selectedFiles)
+
+            // Convert the QUrl array to a clean string array before sending to Python
+            var paths = []
+            for (var i = 0; i < selectedFiles.length; i++) {
+                paths.push(selectedFiles[i].toString())
+            }
+
+            //second option: var paths = selectedFiles.map(f => f.toString())
+
+            backend.addSelectedFiles(paths)
+        }
+    }
 
 
     Connections {
@@ -27,13 +47,23 @@ Window {
             })
         }
 
-        function onConnectionStateChanged() {
-            conState = backend.connectionState
+        function onConnectionStateUpdated(state) {
+            console.log(state)
 
-
-            if (conState === "connected") {
+             if (state === "connected") {
                 loader.source = "FileShare.qml"
             }
+        }
+
+        function onActivityStateUpdated(state) {
+            console.log(state)
+
+            if (state === "choosing") {
+                fileDialog.open()
+                backend.setActivityState("idle")
+                }
+
+
         }
 
         function onPacketReceived(ip, packetType) {
@@ -109,3 +139,4 @@ Window {
         }
     }
 }
+

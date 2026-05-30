@@ -1,12 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import LAN.Backend 1.0
 
 Rectangle {
     anchors.fill: parent
     color: "#141414"
-
-    property var filePaths: backend.filesManager.selectedFiles
 
     Column {
         anchors.centerIn: parent
@@ -20,37 +17,14 @@ Rectangle {
             clip: true
             anchors.horizontalCenter: parent.horizontalCenter
 
-            ListView {
+            GridView {
                 id: listView
                 anchors.fill: parent
                 anchors.margins: 20
-                model: filePaths
-                spacing: 5
+                model: backend.selectedFiles
 
-                delegate: Rectangle {
-                    width: listView.width
-                    height: 30
-                    color: "transparent"
-
-                    Text {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        text: modelData
-                        color: "white"
-                        font.pixelSize: 11
-                        elide: Text.ElideMiddle
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignLeft
-                        wrapMode: Text.NoWrap
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-                        color: "#333333"
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
+                delegate: FileItem {
+                   filePath: modelData
                 }
 
                 Text {
@@ -92,7 +66,7 @@ Rectangle {
                 id: mouseArea
                 anchors.fill: parent
                 onClicked: {
-                    backend.setActivityState(StatusClass.SELECTING_FILES)
+                    backend.activityState = "choosing"
                 }
             }
         }
@@ -115,7 +89,7 @@ Rectangle {
                 id: sendArea
                 anchors.fill: parent
                 onClicked: {
-                    backend.setActivityState(StatusClass.SENDING_FILES)
+                    backend.sendData()
                 }
             }
         }

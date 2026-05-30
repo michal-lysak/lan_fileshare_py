@@ -24,6 +24,7 @@ Rectangle {
             height: 100
             radius: 20
             color: mouseArea.containsMouse ? "#444444" : "#333333"
+            border.color: Qt.lighter(color)
 
             MouseArea {
                 id: mouseArea

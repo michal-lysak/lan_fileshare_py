@@ -1,4 +1,6 @@
 # This Python file uses the following encoding: utf-8
+import os
+os.environ["QT_LOGGING_RULES"] = "qml.debug=true"
 import sys
 import resources_rc
 from pathlib import Path
@@ -8,10 +10,23 @@ from PySide6.QtQml import QQmlApplicationEngine
 from Backend.backend import Backend
 from Backend.discovery import DiscoveryWorker
 from Backend.tcp_manager import TCPManager
-from PySide6.QtCore import QThread, QObject, Signal
-
+from PySide6.QtCore import QThread, QObject, Signal, qInstallMessageHandler, QtMsgType
 
 if __name__ == "__main__":
+    # QML DEBUGGING
+    def qt_message_handler(mode, context, message):
+        if mode == QtMsgType.QtDebugMsg:
+            print(f"[QML DEBUG] {message}")
+        elif mode == QtMsgType.QtWarningMsg:
+            print(f"[QML WARN]  {message}")
+        elif mode == QtMsgType.QtCriticalMsg:
+            print(f"[QML ERROR] {message}")
+        elif mode == QtMsgType.QtFatalMsg:
+            print(f"[QML FATAL] {message}")
+
+    qInstallMessageHandler(qt_message_handler)
+
+
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
     qml_file = Path(__file__).resolve().parent / "ui" / "main.qml"
@@ -32,6 +47,7 @@ if __name__ == "__main__":
 
     backend.tcpStartServer.connect(tcpManager.startServer)
     backend.tcpConnectOnServer.connect(tcpManager.connectToHost)
+    backend.sendData.connect(tcpManager.sendData)
 
     backend.conRequest_Signal.connect(worker.conRequest)
     backend.sendPacket.connect(worker.sendPacket)

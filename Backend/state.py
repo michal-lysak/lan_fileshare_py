@@ -7,3 +7,7 @@ class State:
     CONNECTING = "connecting"
     CONNECTED = "connected"
     TRANSFERING = "transfering"
+
+class ActivityState:
+    IDLE = "idle"
+    CHOOSING = "choosing"

@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>ui/Icons/qml/ComputerIcon.qml</file>
         <file>ui/Icons/Computer4x.png</file>
+        <file>ui/FileItem.qml</file>
     </qresource>
 </RCC>
