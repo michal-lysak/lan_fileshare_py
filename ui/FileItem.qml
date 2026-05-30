@@ -3,6 +3,9 @@ import QtQuick 2.15
 Rectangle {
     property string filePath: ""
     property string fileName: filePath.split("/").pop()
+    property string fileType : filePath.split(".").pop()
+
+    property var imageTypes: ["png", "jpg", "jpeg", "gif", "webp"]
 
     width: 100
     height: 100
@@ -13,8 +16,10 @@ Rectangle {
         spacing: 10
 
         Image {
-            source: "./Icons/file-icon.png"
-            height: 30; width: 30
+            source: imageTypes.includes(fileType)
+                    ? filePath
+                    : "./Icons/file-icon.png"
+            height: 40; width: 40
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
