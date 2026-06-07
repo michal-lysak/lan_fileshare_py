@@ -2,7 +2,7 @@ import QtQuick
 import "qrc:/ui/Icons/qml"
 
 Rectangle {
-    color: "#202020"
+    color: "#141414"
     anchors.fill: parent
     anchors.margins: 20
     radius: 20
@@ -12,7 +12,7 @@ Rectangle {
 
     GridView {
         id: grid
-
+        height: parent.height
         anchors.fill: parent
         anchors.margins: 20
         cellWidth: 120
@@ -23,8 +23,16 @@ Rectangle {
             width: 100
             height: 100
             radius: 20
-            color: mouseArea.containsMouse ? "#444444" : "#333333"
+            color: mouseArea.containsMouse ? "#444444" : "#141414"
             border.color: Qt.lighter(color)
+
+            Behavior on opacity {
+                NumberAnimation {duration: 100}
+            }
+
+            HoverHandler {
+                onHoveredChanged: tile.opacity = hovered ? 0.5 : 1
+            }
 
             MouseArea {
                 id: mouseArea
