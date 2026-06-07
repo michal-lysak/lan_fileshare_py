@@ -48,6 +48,7 @@ if __name__ == "__main__":
     backend.tcpStartServer.connect(tcpManager.startServer)
     backend.tcpConnectOnServer.connect(tcpManager.connectToHost)
     backend.sendData.connect(tcpManager.sendData)
+    backend.deleteIndexes.connect(backend.removeIndexes)
 
     backend.conRequest_Signal.connect(worker.conRequest)
     backend.sendPacket.connect(worker.sendPacket)
