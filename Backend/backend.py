@@ -16,6 +16,8 @@ class Backend(QObject):
     tcpStartServer = Signal()
     tcpConnectOnServer = Signal(str)
 
+    deleteIndexes = Signal(list)
+
     model = QStringListModel()
 
     selectedFilesChanged = Signal()
@@ -50,6 +52,8 @@ class Backend(QObject):
     def getSelectedFiles(self):
         return self._selectedFiles
 
+    # ----- States -----
+
     connectionState = Property(
         str,
         getConnectionState,
@@ -69,6 +73,8 @@ class Backend(QObject):
         getSelectedFiles,
         notify=selectedFilesChanged
     )
+
+    # ----- Slots -----
 
     @Slot(str)
     def conRequest(self, ip: str):
@@ -98,4 +104,11 @@ class Backend(QObject):
         # 4. Update the array and notify everything listening in QML
         self._selectedFiles.extend(paths)
         print("Current file list in Python:", self._selectedFiles)
+        self.selectedFilesChanged.emit()
+
+    @Slot(list)
+    def removeIndexes(self, indexes):
+        print(indexes)
+        for i in range(len(indexes)):
+            self._selectedFiles.pop(i)
         self.selectedFilesChanged.emit()
