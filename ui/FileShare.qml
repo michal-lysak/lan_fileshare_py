@@ -2,6 +2,11 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 Rectangle {
+
+
+    property var selectedIndexes : []
+
+
     anchors.fill: parent
     color: "#141414"
 
@@ -23,8 +28,34 @@ Rectangle {
                 anchors.margins: 20
                 model: backend.selectedFiles
 
+                Connections {
+                    target: backend
+                    onDeleteIndexes: {
+                        console.log("")
+                    }
+                }
+
                 delegate: FileItem {
                    filePath: modelData
+
+                   selected: selectedIndexes.includes(index)
+
+                   MouseArea {
+                       anchors.fill: parent
+
+                       onClicked: function(mouse) {
+                           if (mouse.modifiers & Qt.ControlModifier) {
+
+                               if (selectedIndexes.includes(index))
+                                   selectedIndexes = selectedIndexes.filter(i => i !== index)
+                               else
+                                   selectedIndexes = selectedIndexes.concat(index)
+
+                           } else {
+                               selectedIndexes = [index]
+                           }
+                       }
+                   }
                 }
 
                 Text {
@@ -46,27 +77,32 @@ Rectangle {
                     }
                 }
             }
-        }
+            FilesOverlayBar {
+                Row {
+                    anchors.centerIn: parent   // 👈 key fix
+                    spacing: 10
 
-        Rectangle {
-            width: 120
-            height: 35
-            radius: 15
-            color: mouseArea.pressed ? "#2B3740" : "#36454F"
-            anchors.horizontalCenter: parent.horizontalCenter
+                    FilesOverlayItem {
+                        source: "./Icons/plus-icon.png"
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                backend.activityState = "choosing"
+                            }
+                        }
+                    }
 
-            Text {
-                text: "Select Files"
-                color: "white"
-                anchors.centerIn: parent
-                font.pixelSize: 12
-            }
+                    FilesOverlayItem {
+                        source: "./Icons/trash-icon.png"
 
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                onClicked: {
-                    backend.activityState = "choosing"
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                backend.deleteIndexes(selectedIndexes)
+                                selectedIndexes.pop()
+                            }
+                        }
+                    }
                 }
             }
         }
