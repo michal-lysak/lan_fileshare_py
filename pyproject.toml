@@ -2,4 +2,23 @@
 name = "PySide QtQuick Project"
 
 [tool.pyside6-project]
-files = ["Backend/backend.py", "Backend/discovery.py", "Backend/state.py", "Backend/tcp_manager.py", "main.py", "ui/main.qml", "resources.qrc", "ui/ConnectionRequest.qml", "ui/FileShare.qml", "ui/Icons/Computer4x.png", "ui/Icons/qml/ComputerIcon.qml", "ui/DevicesGrid.qml", "ui/FileItem.qml", "ui/Icons/file-icon.png"]
+files = [
+"Backend/backend.py",
+"Backend/discovery.py",
+"Backend/state.py",
+"Backend/tcp_manager.py",
+"main.py",
+"resources.qrc",
+"ui/ConnectionRequest.qml",
+"ui/DevicesGrid.qml",
+"ui/FileItem.qml",
+"ui/FileShare.qml",
+"ui/FilesOverlayBar.qml",
+"ui/FilesOverlayItem.qml",
+"ui/Icons/Computer4x.png",
+"ui/Icons/file-icon.png",
+"ui/Icons/qml/ComputerIcon.qml",
+"ui/Icons/plus-icon.png",
+"ui/Icons/trash-icon.png",
+"ui/main.qml"
+]
