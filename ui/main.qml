@@ -61,7 +61,7 @@ Window {
             if (state === "choosing") {
                 fileDialog.open()
                 backend.setActivityState("idle")
-                }
+            }
 
 
         }
@@ -127,8 +127,19 @@ Window {
         spacing: 20
         anchors.centerIn: parent
 
+       // Rectangle {height: 40}
+
+        Text {
+            text: "Discovered devices"
+            font.family: "Segoe UI"
+            color: "white"
+            anchors.horizontalCenter: parent.horizontalCenter
+            font.pointSize: 20
+            font.bold: true
+        }
+
         Rectangle {
-            color: "#202020"
+            color: "#141414"
             width: 500
             height: 350
             radius: 20
