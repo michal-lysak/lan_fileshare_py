@@ -1,15 +1,29 @@
-import QtQuick 2.15
+import QtQuick
 
 Rectangle {
+    id: fileRec
     property string filePath: ""
     property string fileName: filePath.split("/").pop()
     property string fileType : filePath.split(".").pop()
 
     property var imageTypes: ["png", "jpg", "jpeg", "gif", "webp"]
 
+    property bool selected: false
+    property bool hovered: false
+
     width: 100
     height: 100
-    color: "transparent"
+    radius: 20
+    color: selected ? "#3b82f6" : "transparent"
+
+    Behavior on color {
+        ColorAnimation {duration: 125}
+    }
+
+    HoverHandler {
+        onHoveredChanged: fileRec.hovered = hovered
+    }
+
 
     Column {
         anchors.centerIn: parent
@@ -17,11 +31,12 @@ Rectangle {
 
         Image {
             source: imageTypes.includes(fileType)
-                    ? filePath
+                    ? "file:///" + filePath
                     : "./Icons/file-icon.png"
             height: 40; width: 40
             anchors.horizontalCenter: parent.horizontalCenter
         }
+
 
         Text {
             width: 80
