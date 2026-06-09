@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import "../Components"
 
 Rectangle {
 
@@ -83,7 +84,7 @@ Rectangle {
                     spacing: 10
 
                     FilesOverlayItem {
-                        source: "./Icons/plus-icon.png"
+                        source: "../../assets/icons/plus-icon.png"
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
@@ -93,7 +94,7 @@ Rectangle {
                     }
 
                     FilesOverlayItem {
-                        source: "./Icons/trash-icon.png"
+                        source: "../../assets/icons/trash-icon.png"
 
                         MouseArea {
                             anchors.fill: parent

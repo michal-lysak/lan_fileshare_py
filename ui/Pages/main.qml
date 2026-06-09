@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
+
+import "../Components"
 Window {
     width: 640
     height: 480
@@ -69,7 +71,7 @@ Window {
         function onPacketReceived(ip, packetType) {
             senderIp = ip
             if (packetType === "CONNECTION_REQUEST")  {
-                overlay.source = "ConnectionRequest.qml"
+                overlay.source = "../Components/ConnectionRequest.qml"
             }
             if (packetType === "CONNECTION_ACCEPTED") {
                 backend.tcpConnectOnServer(senderIp)

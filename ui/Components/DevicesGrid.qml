@@ -1,5 +1,4 @@
 import QtQuick
-import "qrc:/ui/Icons/qml"
 
 Rectangle {
     color: "#141414"
@@ -48,9 +47,11 @@ Rectangle {
                 spacing: 6
                 anchors.centerIn: parent
 
-                ComputerIcon {
-                    anchors.horizontalCenter: parent.horizontalCenter
+                Image {
+                    source: "../../assets/icons/Computer4x.png"
+                    width: 45; height: 45
                 }
+
                 Text {
                     text: name
                     color: "white"

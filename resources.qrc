@@ -1,9 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file>ui/Icons/qml/ComputerIcon.qml</file>
-        <file>ui/Icons/Computer4x.png</file>
-        <file>ui/FileItem.qml</file>
-        <file>ui/FilesOverlayBar.qml</file>
-        <file>ui/FilesOverlayItem.qml</file>
+        <file>assets/icons/qml/ComputerIcon.qml</file>
+        <file>assets/icons/Computer4x.png</file>
+        <file>ui/Components/FileItem.qml</file>
+        <file>ui/Components/FilesOverlayBar.qml</file>
+        <file>ui/Components/FilesOverlayItem.qml</file>
     </qresource>
 </RCC>

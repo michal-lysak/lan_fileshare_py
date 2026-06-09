@@ -1,10 +1,10 @@
 # This Python file uses the following encoding: utf-8
 
-from Backend import tcp_manager
+from backend import tcp_manager
 from PySide6.QtCore import QObject, Signal, Property, Slot
 from PySide6.QtNetwork import QUdpSocket, QHostAddress
 import socket
-from Backend.tcp_manager import TCPManager
+from backend.tcp_manager import TCPManager
 
 
 class DiscoveryWorker(QObject):
