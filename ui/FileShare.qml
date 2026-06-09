@@ -79,7 +79,7 @@ Rectangle {
             }
             FilesOverlayBar {
                 Row {
-                    anchors.centerIn: parent   // 👈 key fix
+                    anchors.centerIn: parent  
                     spacing: 10
 
                     FilesOverlayItem {
