@@ -13,6 +13,8 @@ class Backend(QObject):
     sendPacket = Signal(str, str)
     sendData = Signal()
 
+    # Receiving file state
+
     tcpStartServer = Signal()
     tcpConnectOnServer = Signal(str)
 
@@ -107,8 +109,9 @@ class Backend(QObject):
         self.selectedFilesChanged.emit()
 
     @Slot(list)
-    def removeIndexes(self, indexes):
-        print(indexes)
-        for i in range(len(indexes)):
-            self._selectedFiles.pop(i)
+    def removeIndexes(self, filePaths):
+        print("removeIndexes:", filePaths)
+        for f in filePaths:
+            self._selectedFiles.remove(f)
+
         self.selectedFilesChanged.emit()
