@@ -20,6 +20,10 @@ Rectangle {
         ColorAnimation {duration: 125}
     }
 
+    Behavior on border.color {
+        ColorAnimation {duration: 75}
+    }
+
     HoverHandler {
         onHoveredChanged: fileRec.hovered = hovered
     }
@@ -32,7 +36,7 @@ Rectangle {
         Image {
             source: imageTypes.includes(fileType)
                     ? "file:///" + filePath
-                    : "./Icons/file-icon.png"
+                    : "../../assets/icons/file-icon.png"
             height: 40; width: 40
             anchors.horizontalCenter: parent.horizontalCenter
         }
