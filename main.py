@@ -58,6 +58,19 @@ if __name__ == "__main__":
 
     engine.load(qml_file)
 
+# Closing the app
+    def cleanup():
+        print("App shutting down...")
+
+        worker.stop()
+
+        thread.quit()
+        thread.wait()
+
+        print("Thread stopped cleanly")
+
     if not engine.rootObjects():
         sys.exit(-1)
+
+    app.aboutToQuit.connect(cleanup)
     sys.exit(app.exec())
