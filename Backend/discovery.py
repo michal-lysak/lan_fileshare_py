@@ -35,6 +35,15 @@ class DiscoveryWorker(QObject):
         
         print("Listening for devices (QUdpSocket)...")
 
+    def stop(self):
+        try:
+            self.socket.readyRead.disconnect()
+        except:
+            pass
+
+        self.socket.close()
+        self.socket.abort()
+
 
     def sendDiscovery(self):
 
