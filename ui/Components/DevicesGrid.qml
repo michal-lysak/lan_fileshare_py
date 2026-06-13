@@ -33,6 +33,31 @@ Rectangle {
                 onHoveredChanged: tile.opacity = hovered ? 0.5 : 1
             }
 
+            Column {
+                spacing: 6
+                anchors.fill: parent
+
+                anchors.margins: 5
+
+                Image {
+                    id: icon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    source: "../../assets/icons/Computer4x.png"
+                    width: 45; height: 45
+                }
+
+                Text {
+                    width: parent.width
+                    anchors.topMargin: 4
+
+                    text: name
+                    font.pixelSize: 11
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                }
+            }
+
             MouseArea {
                 id: mouseArea
                 anchors.fill: parent
@@ -43,21 +68,7 @@ Rectangle {
                 }
             }
 
-            Column {
-                spacing: 6
-                anchors.centerIn: parent
 
-                Image {
-                    source: "../../assets/icons/Computer4x.png"
-                    width: 45; height: 45
-                }
-
-                Text {
-                    text: name
-                    color: "white"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-            }
         }
     }
 }
