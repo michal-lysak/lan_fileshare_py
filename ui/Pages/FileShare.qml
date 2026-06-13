@@ -5,7 +5,7 @@ import "../Components"
 Rectangle {
 
 
-    property var selectedIndexes : []
+    property var selectedFile_Paths : []
 
 
     anchors.fill: parent
@@ -39,7 +39,7 @@ Rectangle {
                 delegate: FileItem {
                    filePath: modelData
 
-                   selected: selectedIndexes.includes(index)
+                   selected: selectedFile_Paths.includes(filePath)
 
                    MouseArea {
                        anchors.fill: parent
@@ -47,15 +47,20 @@ Rectangle {
                        onClicked: function(mouse) {
                            if (mouse.modifiers & Qt.ControlModifier) {
 
-                               if (selectedIndexes.includes(index))
-                                   selectedIndexes = selectedIndexes.filter(i => i !== index)
+                               if (selectedFile_Paths.includes(filePath))
+                                   selectedFile_Paths = selectedFile_Paths.filter(i => i !== filePath)
                                else
-                                   selectedIndexes = selectedIndexes.concat(index)
+                                   selectedFile_Paths = selectedFile_Paths.concat(filePath)
 
                            } else {
-                               selectedIndexes = [index]
+                               selectedFile_Paths = [filePath]
                            }
                        }
+
+                       HoverHandler {
+                            onHoveredChanged: hovered ? border.color = "#66666666" : border.color = "transparent"
+                       }
+
                    }
                 }
 
@@ -99,8 +104,8 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                backend.deleteIndexes(selectedIndexes)
-                                selectedIndexes.pop()
+                                backend.deleteIndexes(selectedFile_Paths)
+                                selectedFile_Paths.pop()
                             }
                         }
                     }
