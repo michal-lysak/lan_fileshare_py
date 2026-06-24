@@ -1,16 +1,19 @@
 import os
 from PySide6.QtCore import (QObject, QFile, QFileInfo, QDir, QStandardPaths,
-                            QDataStream, QByteArray, QIODevice, QMimeDatabase, Slot)
+                            QDataStream, QByteArray, QIODevice, QMimeDatabase, Slot, QUrl)
 from PySide6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 from PySide6.QtCore import QObject, Signal, Property, Slot
 
+from backend.models.FileListModel import FileListModel, FileRoles
+
 class TCPManager(QObject):
-    def __init__(self, backend, parent=None):
-        super().__init__(parent)
+    def __init__(self, backend, fileModel):
+        super().__init__()
         self.m_backend = backend
         self.tcpServer = None
         self.tcpSocket = None
         self.m_clientSockets = []
+        self.fileModel = fileModel
 
         self.tcpStartServer = Signal(str)
 
@@ -21,8 +24,10 @@ class TCPManager(QObject):
         """Helper to reset the state machine for file receiving."""
         self.expectedHeaderSize = -1
         self.currentHeader = {"fileName": "", "fileSize": 0, "created": None, "mimeType": ""}
-        self.currentFile = None
+        #self.currentFile = None
         self.bytesReceived = 0
+        self.currentRow = -1
+
 
     def startServer(self):
         port = 45454
@@ -61,20 +66,26 @@ class TCPManager(QObject):
     def sendData(self):
         print("Sending data...")
         # Assuming m_filesManager is a Python property/attribute on your backend
-        files = self.m_backend._selectedFiles
-        for file_path in files:
-            self.sendFile(file_path)
+        files = self.fileModel._files
+        rows = self.fileModel.rowCount()
 
-    # =======================
+        for row in range(rows):
+            file = self.fileModel._files[row]
+            self.sendFile(file["filePath"], row)  # Assuming you have a way to get the index of the file in the model    
+        print(f"Files to send: {len(files)}")
+        row = self.fileModel.rowCount()
+
+  # =======================
     # Sending side
     # =======================
-    def sendFile(self, file_path: str):
-        print(f"Sending file: {file_path}")
+    def sendFile(self, fileUrl: str, row):
+        print(f"file: {fileUrl}")
 
         if not self.tcpSocket or self.tcpSocket.state() != QTcpSocket.SocketState.ConnectedState:
             print("Not connected to any host.")
             return
 
+        file_path = QUrl(fileUrl).toLocalFile()
         file = QFile(file_path)
         if not file.open(QIODevice.OpenModeFlag.ReadOnly):
             print(f"Failed to open file: {file_path}")
@@ -86,6 +97,7 @@ class TCPManager(QObject):
         file_size = file.size()
         created = file_info.birthTime()
         mime_type = QMimeDatabase().mimeTypeForFile(file_info).name()
+
 
         # Serialize header
         header_block = QByteArray()
@@ -110,10 +122,19 @@ class TCPManager(QObject):
 
         # Send file data in chunks
         chunk_size = 64 * 1024
+        print(f"Sending file: {file_name} Size: {file_size} bytes in chunks of {chunk_size} bytes")
         while not file.atEnd():
             buffer = file.read(chunk_size)
             self.tcpSocket.write(buffer)
+            
+            index = self.fileModel.index(row, 0)
 
+            current = self.fileModel.data(index, FileRoles.sendedRole) or 0
+            current_bytes_sended = buffer.size()
+            new_value = current + current_bytes_sended
+
+            print("sended already: ", new_value, "bytes")
+            self.fileModel.setData(index, new_value, role=FileRoles.sendedRole)
         file.close()
         print(f"File sent successfully: {file_name}")
 
@@ -160,6 +181,7 @@ class TCPManager(QObject):
                 if socket.bytesAvailable() < self.expectedHeaderSize:
                     return  # wait for full header
 
+
                 header_block = socket.read(self.expectedHeaderSize)
                 header_stream = QDataStream(header_block, QIODevice.OpenModeFlag.ReadOnly)
                 header_stream.setVersion(QDataStream.Version.Qt_6_9)
@@ -173,10 +195,11 @@ class TCPManager(QObject):
                 # Prepare file to save
                 save_dir = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation) + "/NearbyFiles/"
                 QDir().mkpath(save_dir)
-                
+
                 save_path = os.path.join(save_dir, self.currentHeader["fileName"])
+                self.currentFile = QFile(save_path) # 
+                self.currentRow = self.fileModel.addFile(self.currentHeader["fileName"], save_path, self.currentHeader["fileSize"], "incoming")
                 
-                self.currentFile = QFile(save_path)
                 if not self.currentFile.open(QIODevice.OpenModeFlag.WriteOnly):
                     print(f"Failed to open file for writing: {save_path}")
                     self._reset_receive_state()
@@ -189,10 +212,19 @@ class TCPManager(QObject):
             # Step 3: Read file data
             if self.bytesReceived < self.currentHeader["fileSize"]:
                 # Calculate remaining bytes to read, up to 64KB max
+
                 remaining = self.currentHeader["fileSize"] - self.bytesReceived
                 bytes_to_read = min(remaining, 64 * 1024)
                 
                 chunk = socket.read(bytes_to_read)
+
+                index = self.currentRow
+                current = self.fileModel.data(index, FileRoles.receivedRole)
+                current_bytes_received = chunk.size()
+                new_value = current + current_bytes_received
+
+
+                self.fileModel.setData(index, new_value, role=FileRoles.receivedRole)
                 self.currentFile.write(chunk)
                 self.bytesReceived += chunk.size()
 
@@ -203,6 +235,7 @@ class TCPManager(QObject):
             if self.bytesReceived >= self.currentHeader["fileSize"]:
                 self.currentFile.close()
                 print(f" File received successfully: {self.currentHeader['fileName']}")
+                self.fileModel.setData(self.currentRow, "completed", role=FileRoles.directionRole)
                 
                 # Reset state machine for the next potential file
                 self._reset_receive_state()
