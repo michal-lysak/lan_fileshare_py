@@ -78,6 +78,7 @@ Rectangle {
             }
         }
 
+// not changable
         Component {
             id: outgoingComponent
             Column  {
