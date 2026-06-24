@@ -1,17 +1,17 @@
 import QtQuick
-
+import QtQuick.Controls
 Rectangle {
-    color: "#141414"
+    color: "#161616"
     anchors.fill: parent
-    anchors.margins: 20
     radius: 20
+    border.color: "#2A2A2A"
+    border.width: 1
 
 
     property alias model: grid.model
 
     GridView {
         id: grid
-        height: parent.height
         anchors.fill: parent
         anchors.margins: 20
         cellWidth: 120
@@ -26,35 +26,45 @@ Rectangle {
             border.color: Qt.lighter(color)
 
             Behavior on opacity {
-                NumberAnimation {duration: 100}
+                NumberAnimation {duration: 80}
             }
 
+
+
             HoverHandler {
-                onHoveredChanged: tile.opacity = hovered ? 0.5 : 1
+                onHoveredChanged: function() {
+                    tile.border.color = hovered ? "#66666666" : "transparent";
+                    deviceName.height = hovered ? 40 : 35;
+                }
             }
 
             Column {
                 spacing: 6
-                anchors.fill: parent
+                width: parent.width - 20
+                anchors.centerIn: parent
 
-                anchors.margins: 5
+
 
                 Image {
                     id: icon
                     anchors.horizontalCenter: parent.horizontalCenter
-                    source: "../../assets/icons/Computer4x.png"
+                    source: "../../assets/icons/computer-rounded_material-symbols.png"
                     width: 45; height: 45
                 }
 
                 Text {
+                    id: deviceName
                     width: parent.width
-                    anchors.topMargin: 4
-
+                    height: 35
                     text: name
                     font.pixelSize: 11
                     color: "white"
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    Behavior on height {
+                        NumberAnimation {duration: 80}
+                    }
                 }
             }
 
@@ -67,8 +77,6 @@ Rectangle {
                         backend.conRequest(ip)
                 }
             }
-
-
         }
     }
 }
