@@ -10,7 +10,7 @@ from backend.tcp_manager import TCPManager
 class DiscoveryWorker(QObject):
     deviceFound = Signal(str, str)  # name, ip
     stateChanged = Signal(str)
-    packetReceived_Signal = Signal(str, str)
+    packetReceived_Signal = Signal(str, str, str)
     packetSend_Signal = Signal(str)
     
 
@@ -70,6 +70,8 @@ class DiscoveryWorker(QObject):
         message = f"CONNECTION_REQUEST|{hostname}".encode()
         
         self.socket.writeDatagram(message, QHostAddress(ip), 9999)
+
+ 
         
     def processPendingDatagrams(self):
         while self.socket.hasPendingDatagrams():
@@ -79,10 +81,11 @@ class DiscoveryWorker(QObject):
 
             message = datagram.data().decode()
             ip = host.toString()
+            parts = message.split("|")
 
             if message.startswith("DISCOVER"):
-                parts = message.split("|")
-                name = parts[1] if len(parts) > 1 else "Unknown"
+
+                name = parts[1]
 
                 if ip not in self.devices:
                     self.devices.add(ip)
@@ -92,10 +95,13 @@ class DiscoveryWorker(QObject):
             elif message.startswith("CONNECTION_REQUEST"):
                 print(f"Connection request from {ip}")
 
-                packet_type = message.split("|")[0]
-                self.packetReceived_Signal.emit(ip, packet_type)
+                packet_type = parts[0]
+                device_name = parts[1] if len(parts) > 1 else ""
+                print(device_name)
+                self.packetReceived_Signal.emit(ip, packet_type, device_name)
             elif message.startswith("CONNECTION_ACCEPTED"):
                 print(f"Connection accepted from {ip}")
 
-                packet_type = message.split("|")[0]
-                self.packetReceived_Signal.emit(ip, packet_type)
+                packet_type = parts[0]
+                device_name = parts[1] if len(parts) > 1 else ""
+                self.packetReceived_Signal.emit(ip, packet_type, device_name or "")
