@@ -6,7 +6,6 @@ class Backend(QObject):
     def __init__(self, fileModel):
         super().__init__()
         self._connectionState = "idle"
-        self._fileState = "idle"
         self.fileModel = fileModel
 
     # UDP signals
@@ -22,7 +21,7 @@ class Backend(QObject):
 
     # Network signals
     conRequest_Signal = Signal(str)
-    packetReceived = Signal(str, str)
+    packetReceived = Signal(str, str, str)
     sendPacket = Signal(str, str)
     sendData = Signal()
     
@@ -30,7 +29,7 @@ class Backend(QObject):
     tcpStartServer = Signal()
     tcpConnectOnServer = Signal(str)
 
-    deleteIndexes = Signal(list)
+    deleteFiles_Ids = Signal(list)
 
     # imported files signal
     selectedFilesChanged = Signal()
@@ -51,17 +50,14 @@ class Backend(QObject):
 
     @Slot(str)
     def setActivityState(self, state):
-        if self._fileState != state:
-            self._fileState = state
-            print("File State changed to:", state)
             self.activityStateChanged.emit()
             self.activityStateUpdated.emit(state)
 
-    def getSelectedFiles(self):
-        return self._importedFiles
+   # def getSelectedFiles(self):
+        #return self._importedFiles
 
-    def manageFiles(self, filePaths):
-        print("manageFiles called with:", filePaths)
+    def manageIncomingFiles(self, filePaths):
+        print("manageIncomingFiles called with:", filePaths)
 
         for filePath in filePaths:
             file = QFileInfo(filePath)
@@ -70,7 +66,7 @@ class Backend(QObject):
 
             print("about to add file:", file_name, "with size:", file_size, "and path:", filePath)
 
-            self.fileModel.addFile(file_name, filePath, file_size, "outgoing")
+            self.fileModel.addFile(file_name, filePath, file_size, "incoming")
 
 
             #print("FROM MODEL:" + self.fileModel.data(filePath, FileRoles.NameRole))
@@ -103,10 +99,10 @@ class Backend(QObject):
     def conRequest(self, ip: str):
         self.conRequest_Signal.emit(ip)
 
-    @Slot(str, str)
-    def onPacketReceived(self, ip: str, packet_type: str):
+    @Slot(str, str, str)
+    def onPacketReceived(self, ip: str, packet_type: str, device_name: str):
         print(f"DEBUG: Backend relaying {packet_type} from {ip}")
-        self.packetReceived.emit(ip, packet_type)
+        self.packetReceived.emit(ip, packet_type, device_name)
 
     @Slot(str, str)
     def sendPacketSignal(self, ip: str, message: str):
@@ -119,22 +115,26 @@ class Backend(QObject):
         
         print("manageFiles called with:", filePaths)
         for filePath in filePaths:
-            file = QFileInfo(filePath)
+            filePathN = QUrl(filePath).toLocalFile() 
+            file = QFileInfo(filePathN)
             file_size = file.size()
             file_name = file.fileName()
+            direction = "outgoing"  
 
             print("about to add file:", file_name, "with size:", file_size, "and path:", filePath)
 
-            self.fileModel.addFile(file_name, filePath, file_size, "outgoing")
+            self.fileModel.addFile(file_name, filePath, file_size, direction)
 
 
             #print("FROM MODEL:" + self.fileModel.data(filePath, FileRoles.NameRole))
 
 
     @Slot(list)
-    def removeIndexes(self, filePaths):
-        print("removeIndexes:", filePaths)
-        for f in filePaths:
-            self._importedFiles.remove(f)
+    def removeFiles_Ids(self, ids):
+        print("removeIds:", ids)
+        
+        for id in ids:
+            self.fileModel.removeFile(id)
+            print("Removed file with id:", id)
 
-        self.selectedFilesChanged.emit()
+        #self.selectedFilesChanged.emit()
