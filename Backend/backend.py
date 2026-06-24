@@ -1,34 +1,40 @@
-from PySide6.QtCore import QObject, Signal, Property, Slot, QStringListModel, QUrl
+from PySide6.QtCore import QFileInfo, QObject, Signal, Property, Slot, QUrl
+
+from backend.models.FileListModel import FileListModel, FileRoles
 
 class Backend(QObject):
+    def __init__(self, fileModel):
+        super().__init__()
+        self._connectionState = "idle"
+        self._fileState = "idle"
+        self.fileModel = fileModel
+
+    # UDP signals
     deviceDiscovered = Signal(str, str)  # name, ip
+
+    # connection state signals
     connectionStateChanged = Signal()
     connectionStateUpdated = Signal(str)
 
+    # activity state signals
     activityStateChanged = Signal()
     activityStateUpdated = Signal(str)
 
+    # Network signals
     conRequest_Signal = Signal(str)
     packetReceived = Signal(str, str)
     sendPacket = Signal(str, str)
     sendData = Signal()
-
-    # Receiving file state
-
+    
+    # TCP signals
     tcpStartServer = Signal()
     tcpConnectOnServer = Signal(str)
 
     deleteIndexes = Signal(list)
 
-    model = QStringListModel()
-
+    # imported files signal
     selectedFilesChanged = Signal()
 
-    def __init__(self):
-        super().__init__()
-        self._connectionState = "idle"  # ⚠️ must exist
-        self._fileState = "idle"  # ⚠️ must exist
-        self._selectedFiles = []
 
     def getConnectionState(self):
         return self._connectionState
@@ -52,7 +58,27 @@ class Backend(QObject):
             self.activityStateUpdated.emit(state)
 
     def getSelectedFiles(self):
-        return self._selectedFiles
+        return self._importedFiles
+
+    def manageFiles(self, filePaths):
+        print("manageFiles called with:", filePaths)
+
+        for filePath in filePaths:
+            file = QFileInfo(filePath)
+            file_size = file.size()
+            file_name = file.fileName()
+
+            print("about to add file:", file_name, "with size:", file_size, "and path:", filePath)
+
+            self.fileModel.addFile(file_name, filePath, file_size, "outgoing")
+
+
+            #print("FROM MODEL:" + self.fileModel.data(filePath, FileRoles.NameRole))
+
+
+    def onSelectedFilesChanged(self):
+        return self.manageFiles(self._importedFiles)
+
 
     # ----- States -----
 
@@ -70,11 +96,6 @@ class Backend(QObject):
         notify=activityStateChanged
     )
 
-    selectedFiles = Property(
-        list,
-        getSelectedFiles,
-        notify=selectedFilesChanged
-    )
 
     # ----- Slots -----
 
@@ -93,25 +114,27 @@ class Backend(QObject):
 
 
     @Slot(list)
-    def addSelectedFiles(self, files):
-        paths = []
-        for f in files:
-            # Converts URL string ('file:///path/to/file') to native OS path ('/path/to/file')
-            url = QUrl(f)
-            if url.isLocalFile():
-                paths.append(url.toLocalFile())
-            else:
-                paths.append(f)
+    def addSelectedFiles(self, filePaths):
+        # self.manageFiles(filePaths)
+        
+        print("manageFiles called with:", filePaths)
+        for filePath in filePaths:
+            file = QFileInfo(filePath)
+            file_size = file.size()
+            file_name = file.fileName()
 
-        # 4. Update the array and notify everything listening in QML
-        self._selectedFiles.extend(paths)
-        print("Current file list in Python:", self._selectedFiles)
-        self.selectedFilesChanged.emit()
+            print("about to add file:", file_name, "with size:", file_size, "and path:", filePath)
+
+            self.fileModel.addFile(file_name, filePath, file_size, "outgoing")
+
+
+            #print("FROM MODEL:" + self.fileModel.data(filePath, FileRoles.NameRole))
+
 
     @Slot(list)
     def removeIndexes(self, filePaths):
         print("removeIndexes:", filePaths)
         for f in filePaths:
-            self._selectedFiles.remove(f)
+            self._importedFiles.remove(f)
 
         self.selectedFilesChanged.emit()
