@@ -5,5 +5,6 @@
         <file>ui/Components/FileItem.qml</file>
         <file>ui/Components/FilesOverlayBar.qml</file>
         <file>ui/Components/FilesOverlayItem.qml</file>
+        <file>ui/Components/ActionButton.qml</file>
     </qresource>
 </RCC>
