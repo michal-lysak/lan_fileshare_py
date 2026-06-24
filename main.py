@@ -1,9 +1,12 @@
 # This Python file uses the following encoding: utf-8
 import os
+
+from backend.models.FileListModel import FileListModel
 os.environ["QT_LOGGING_RULES"] = "qml.debug=true"
 import sys
 import resources_rc
 from pathlib import Path
+
 
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
@@ -31,31 +34,39 @@ if __name__ == "__main__":
     engine = QQmlApplicationEngine()
     qml_file = Path(__file__).resolve().parent / "ui" / "Pages" / "main.qml"
 
-    backend = Backend()
-    tcpManager = TCPManager(backend)
+
+    fileModel = FileListModel()
+    backend = Backend(fileModel)
+    tcpManager = TCPManager(backend, fileModel)
+    
 
     worker = DiscoveryWorker()
     thread = QThread()
+    tcpThread = QThread()
 
     worker.moveToThread(thread)
+    tcpManager.moveToThread(tcpThread)
     thread.started.connect(worker.start)
+
     thread.started.connect(lambda: backend.setConnectionState("discovering"))
 
     worker.deviceFound.connect(backend.deviceDiscovered)
     worker.packetReceived_Signal.connect(backend.onPacketReceived)
     worker.stateChanged.connect(backend.setConnectionState)
 
+    backend.selectedFilesChanged.connect(backend.onSelectedFilesChanged)
     backend.tcpStartServer.connect(tcpManager.startServer)
     backend.tcpConnectOnServer.connect(tcpManager.connectToHost)
     backend.sendData.connect(tcpManager.sendData)
-    backend.deleteIndexes.connect(backend.removeIndexes)
+    backend.deleteFiles_Ids.connect(backend.removeFiles_Ids)
 
     backend.conRequest_Signal.connect(worker.conRequest)
     backend.sendPacket.connect(worker.sendPacket)
 
     thread.start()
+    tcpThread.start()
     engine.rootContext().setContextProperty("backend", backend)
-
+    engine.rootContext().setContextProperty("fileModel", fileModel)
     engine.load(qml_file)
 
 # Closing the app
@@ -65,6 +76,8 @@ if __name__ == "__main__":
         worker.stop()
 
         thread.quit()
+        tcpThread.quit()
+        tcpThread.wait()
         thread.wait()
 
         print("Thread stopped cleanly")
