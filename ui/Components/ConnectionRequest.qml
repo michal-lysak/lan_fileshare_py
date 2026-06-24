@@ -6,7 +6,8 @@ Rectangle {
     color: "black"
     opacity: 0.75
 
-    property string senderRequest: ""
+    property string senderIp: ""
+    property string senderName: ""
     signal requestDiscard()
     signal requestAccept()
     signal doConnection()
@@ -19,7 +20,7 @@ Rectangle {
         radius: 15
 
         Text {
-            text: senderRequest + " wants to share files with you, do you agree?"
+            text: senderName + " wants to share files with you"
             color: "white"
             anchors.top: parent.top
             anchors.left: parent.left
@@ -37,41 +38,18 @@ Rectangle {
             spacing: 20
             anchors.bottomMargin: 15
 
-            Rectangle {
-                radius: 15
-                width: 120
-                height: 35
-                color: "white"
-
-                Text {
-                    text: "Yes"
-                    color: "black"
-                    anchors.centerIn: parent
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        reqOverlay.requestAccept();
-                    }
+            ActionButton {
+                textObject.text: "Accept"
+                onClicked: {
+                    reqOverlay.requestAccept()
                 }
             }
 
-            Rectangle {
-                radius: 15
-                width: 120
-                height: 35
-                color: "white"
-                Text {
-                    text: "No"
-                    color: "black"
-                    anchors.centerIn: parent
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        reqOverlay.requestDiscard()
-                    }
-                }
+            ActionButton {
+                textObject.text: "Decline"
+                onClicked: {
+                    reqOverlay.requestDiscard()
+            }
             }
         }
     }
