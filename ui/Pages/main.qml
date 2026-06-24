@@ -1,19 +1,20 @@
 import QtQuick
+import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Dialogs
 
 import "../Components"
 Window {
-    width: 640
-    height: 480
+    width: 640; minimumWidth: 640; maximumWidth: 640
+    height: 480; minimumHeight: 480; maximumHeight: 480
     visible: true
     title: qsTr("Nearby File Sender")
     color: "#141414"
 
     property string senderIp: ""
+    property string senderName: ""
     property string message: ""
 
-    property var filePaths: backend.selectedFiles
 
     signal sendPacket(string message, string ip)
 
@@ -29,9 +30,6 @@ Window {
             for (var i = 0; i < selectedFiles.length; i++) {
                 paths.push(selectedFiles[i].toString())
             }
-
-            //second option: var paths = selectedFiles.map(f => f.toString())
-
             backend.addSelectedFiles(paths)
         }
     }
@@ -45,7 +43,7 @@ Window {
 
             deviceModel.append({
                 "name": name,
-                "ip": ip
+                "ip": ip,
             })
         }
 
@@ -64,12 +62,12 @@ Window {
                 fileDialog.open()
                 backend.setActivityState("idle")
             }
-
-
         }
 
-        function onPacketReceived(ip, packetType) {
+        function onPacketReceived(ip, packetType, device_name) {
             senderIp = ip
+            senderName = device_name
+
             if (packetType === "CONNECTION_REQUEST")  {
                 overlay.source = "../Components/ConnectionRequest.qml"
             }
@@ -86,10 +84,6 @@ Window {
         id: loader
         anchors.fill: parent
         z: 3
-
-        onLoaded: {
-            loader.item.senderRequest = senderIp
-        }
     }
 
     Loader {
@@ -98,7 +92,8 @@ Window {
         z: 4
 
         onLoaded: {
-            item.senderRequest = senderIp
+            item.senderIp = senderIp
+            item.senderName = senderName
 
             item.requestDiscard.connect(function() {
                 overlay.source = ""
@@ -126,24 +121,21 @@ Window {
     }
 
     Column {
-        spacing: 20
         anchors.centerIn: parent
-
-       // Rectangle {height: 40}
+        spacing: 20
 
         Text {
             text: "Discovered devices"
-            font.family: "Segoe UI"
             color: "white"
             anchors.horizontalCenter: parent.horizontalCenter
-            font.pointSize: 20
+            font.pointSize: 25
             font.bold: true
         }
 
         Rectangle {
             color: "#141414"
-            width: 500
-            height: 350
+            width: 450
+            height: 250
             radius: 20
 
             DevicesGrid {
