@@ -47,6 +47,7 @@ class TCPManager(QObject):
         #     print("TCP: Another device tried connection, declined - already connected")
         #     return
         print("Trying to connect on server")
+        print(f"connecting IP: {ip}")
     
         port = 45454
         if not self.tcpSocket:
@@ -75,16 +76,40 @@ class TCPManager(QObject):
         print(f"Files to send: {len(files)}")
         row = self.fileModel.rowCount()
 
-  # =======================
+    # =======================
     # Sending side
     # =======================
     def sendFile(self, fileUrl: str, row):
         print(f"file: {fileUrl}")
 
-        if not self.tcpSocket or self.tcpSocket.state() != QTcpSocket.SocketState.ConnectedState:
+        active_socket = None
+
+# 1. Check if we are connected as a Client
+        if self.tcpSocket and self.tcpSocket.state() == QTcpSocket.SocketState.ConnectedState:
+            active_socket = self.tcpSocket
+        else:
+            # 2. Check if we are connected as a Server (Loop through all to find the active one)
+            for sock in self.m_clientSockets:
+                if sock.state() == QTcpSocket.SocketState.ConnectedState:
+                    active_socket = sock
+                    break
+
+        # 3. If neither is found, print detailed debug info to see what's wrong
+        if not active_socket:
+            print("\n--- DEBUG SOCKET STATES ---")
+            if self.tcpSocket:
+                print(f"Client Socket (tcpSocket) exists. State: {self.tcpSocket.state()}")
+            else:
+                print("Client Socket (tcpSocket) is None")
+
+            print(f"Server Sockets (m_clientSockets) count: {len(self.m_clientSockets)}")
+            for i, sock in enumerate(self.m_clientSockets):
+                print(f"  Socket [{i}] State: {sock.state()}")
+            print("---------------------------\n")
+
             print("Not connected to any host.")
             return
-
+        
         file_path = QUrl(fileUrl).toLocalFile()
         file = QFile(file_path)
         if not file.open(QIODevice.OpenModeFlag.ReadOnly):
@@ -117,15 +142,15 @@ class TCPManager(QObject):
         size_stream.setVersion(QDataStream.Version.Qt_6_9)
         size_stream.writeInt32(header_size)
 
-        self.tcpSocket.write(size_prefix)
-        self.tcpSocket.write(header_block)
+        active_socket.write(size_prefix)
+        active_socket.write(header_block)
 
         # Send file data in chunks
         chunk_size = 64 * 1024
         print(f"Sending file: {file_name} Size: {file_size} bytes in chunks of {chunk_size} bytes")
         while not file.atEnd():
             buffer = file.read(chunk_size)
-            self.tcpSocket.write(buffer)
+            active_socket.write(buffer)
             
             index = self.fileModel.index(row, 0)
 
