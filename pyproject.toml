@@ -22,5 +22,6 @@ files = [
 "ui/Components/FilesOverlayBar.qml",
 "ui/Components/FilesOverlayItem.qml",
 "ui/Pages/FileShare.qml",
-"ui/Pages/main.qml"
+"ui/Pages/main.qml",
+"assets/icons/ui_watermark.svg",
 ]
