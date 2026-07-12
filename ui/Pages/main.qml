@@ -8,7 +8,7 @@ Window {
     width: 640; minimumWidth: 640; maximumWidth: 640
     height: 480; minimumHeight: 480; maximumHeight: 480
     visible: true
-    title: qsTr("Nearby File Sender")
+    title: qsTr("TransShare: Share Files Over Network")
     color: "#141414"
 
     property string senderIp: ""

@@ -7,6 +7,7 @@ files = [
 "assets/icons/file-icon.png",
 "assets/icons/plus-icon.png",
 "assets/icons/trash-icon.png",
+"assets/icons/ui_watermark.svg",
 "backend/backend.py",
 "backend/discovery.py",
 "backend/models/FileListModel.py",
@@ -21,5 +22,5 @@ files = [
 "ui/Components/FilesOverlayBar.qml",
 "ui/Components/FilesOverlayItem.qml",
 "ui/Pages/FileShare.qml",
-"ui/Pages/main.qml",
+"ui/Pages/main.qml"
 ]

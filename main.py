@@ -14,7 +14,7 @@ from backend.backend import Backend
 from backend.discovery import DiscoveryWorker
 from backend.tcp_manager import TCPManager
 from PySide6.QtCore import QThread, QObject, Signal, qInstallMessageHandler, QtMsgType
-
+from PySide6.QtGui import QIcon
 if __name__ == "__main__":
     # QML DEBUGGING
     def qt_message_handler(mode, context, message):
@@ -31,6 +31,9 @@ if __name__ == "__main__":
 
 
     app = QGuiApplication(sys.argv)
+    app.setWindowIcon(QIcon("assets/icons/appLogo.svg"))
+    app.setApplicationDisplayName("TransShare")
+    app.setApplicationName("TransShare")
     engine = QQmlApplicationEngine()
     qml_file = Path(__file__).resolve().parent / "ui" / "Pages" / "main.qml"
 
