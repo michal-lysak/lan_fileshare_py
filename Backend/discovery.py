@@ -62,8 +62,16 @@ class DiscoveryWorker(QObject):
     @Slot(str, str)
     def sendPacket(self, ip: str, message: str):
         print(message, ip)
+        # Get the current hostname
+        hostname = socket.gethostname()
+        
+        # Format the message to be "MESSAGE|HOSTNAME"
+        # Example: "CONNECTION_ACCEPTED|My-PC"
+        formatted_message = f"{message}|{hostname}"
+        
+        print(f"Sending: {formatted_message} to {ip}")
 
-        self.socket.writeDatagram(message.encode(), QHostAddress(ip), 9999)
+        self.socket.writeDatagram(formatted_message.encode(), QHostAddress(ip), 9999)
 
     def conRequest(self, ip: str):
         hostname = socket.gethostname()
@@ -84,9 +92,14 @@ class DiscoveryWorker(QObject):
             message = datagram.data().decode()
             ip = host.toString()
             parts = message.split("|")
+
+            if len(parts) < 2:
+                            print(f"Ignored invalid packet from {ip}: {message}")
+                            continue
+
             name = parts[1]
 
-            if message.startswith("DISCOVER") and name != my_hostname:
+            if message.startswith("DISCOVER"): #and name != my_hostname
                 if ip not in self.devices:
                     self.devices.add(ip)
                     print(f"Found device: {name} -> {ip}")
