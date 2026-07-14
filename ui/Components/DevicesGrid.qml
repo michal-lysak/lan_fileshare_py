@@ -7,7 +7,6 @@ Rectangle {
     border.color: "#2A2A2A"
     border.width: 1
 
-
     property alias model: grid.model
 
     GridView {
@@ -17,6 +16,32 @@ Rectangle {
         cellWidth: 120
         cellHeight: 120
 
+        // Animation for items added to the model
+                add: Transition {
+                    NumberAnimation {
+                        properties: "scale"
+                        from: 0
+                        to: 1
+                        duration: 260
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 4
+                    }
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: 150
+                    }
+                }
+
+        Image {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            source: "../../assets/icons/ui_watermark.svg"
+            width: 184; height: 80
+            visible: grid.count === 0
+        }
+
         delegate: Rectangle {
             id: tile
             width: 100
@@ -24,6 +49,7 @@ Rectangle {
             radius: 20
             color: mouseArea.containsMouse ? "#444444" : "#141414"
             border.color: Qt.lighter(color)
+            transformOrigin: Item.Center
 
             Behavior on opacity {
                 NumberAnimation {duration: 80}
