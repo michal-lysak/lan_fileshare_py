@@ -1,5 +1,5 @@
 import QtQuick 2.15
-
+import "../"
 Rectangle {
     id: reqOverlay
     anchors.fill: parent
