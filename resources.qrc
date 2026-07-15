@@ -3,8 +3,10 @@
         <file>assets/icons/qml/ComputerIcon.qml</file>
         <file>assets/icons/Computer4x.png</file>
         <file>ui/Components/FileItem.qml</file>
-        <file>ui/Components/FilesOverlayBar.qml</file>
-        <file>ui/Components/FilesOverlayItem.qml</file>
         <file>ui/Components/ActionButton.qml</file>
+        <file>assets/icons/ui_watermark.svg</file>
+        <file>ui/Components/Overlay/FilesOverlayItem.qml</file>
+        <file>ui/Components/Overlay/FilesOverlayBar.qml</file>
+        <file>assets/icons/mingcute_computer-fill.svg</file>
     </qresource>
 </RCC>
