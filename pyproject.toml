@@ -16,12 +16,13 @@ files = [
 "main.py",
 "resources.qrc",
 "ui/Components/ActionButton.qml",
-"ui/Components/ConnectionRequest.qml",
+"ui/Components/Overlay/ConnectionRequest.qml",
 "ui/Components/DevicesGrid.qml",
 "ui/Components/FileItem.qml",
-"ui/Components/FilesOverlayBar.qml",
-"ui/Components/FilesOverlayItem.qml",
+"ui/Components/Overlay/FilesOverlayBar.qml",
+"ui/Components/Overlay/FilesOverlayItem.qml",
 "ui/Pages/FileShare.qml",
 "ui/Pages/main.qml",
 "assets/icons/ui_watermark.svg",
+"assets/icons/mingcute_computer-fill.svg"
 ]
