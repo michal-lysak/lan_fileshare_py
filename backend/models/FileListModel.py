@@ -104,9 +104,3 @@ class FileListModel(QAbstractListModel):
                 self.endRemoveRows()
                 print(f"Removed file with id: {id}. Current model size: {self.rowCount()}")
                 return
-            
-    def clearModel(self):
-        self.beginResetModel()
-        self._files.clear()
-        self.endResetModel()
-        print("Cleared model. Current model size:", self.rowCount())

@@ -59,32 +59,10 @@ class TCPManager(QObject):
             def on_connected():
                 print("Connected to server!")
                 self.m_backend.setConnectionState("connected")
-
+            
             self.tcpSocket.connected.connect(on_connected)
 
         self.tcpSocket.connectToHost(QHostAddress(ip), port)
-
-    def closeConnection(self):
-        closed_any = False
-
-        # Check client side, if we are connected as a client
-        if self.tcpSocket and self.tcpSocket.state() == QTcpSocket.SocketState.ConnectedState:
-            print("Closing TCP connection...")
-            self.tcpSocket.disconnectFromHost()
-            self.m_backend.setConnectionState("disconnected")
-            closed_any = True
-
-        # Check server side, if we are connected as a server
-        if self.m_clientSockets:
-            for sock in self.m_clientSockets:
-                if sock.state() == QTcpSocket.SocketState.ConnectedState:
-                    print(f"Closing TCP connection with client: {sock.peerAddress().toString()}")
-                    sock.disconnectFromHost()
-                    closed_any = True
-
-        if closed_any:
-            self.m_backend.setConnectionState("disconnected") 
-
 
     def sendData(self):
         print("Sending data...")
@@ -190,26 +168,21 @@ class TCPManager(QObject):
     # =======================
     @Slot()
     def onNewConnection(self):
-        while self.tcpServer.hasPendingConnections():
+        if self.m_clientSockets:
             # Already have a client, reject the new connection
-            client_socket = self.tcpServer.nextPendingConnection()
+            new_socket = self.tcpServer.nextPendingConnection()
+            print(f"Rejected new client from {new_socket.peerAddress().toString()} - already connected")
+            new_socket.disconnectFromHost()
+            new_socket.deleteLater()
+            return
 
-            if not client_socket:
-                break
+        client_socket = self.tcpServer.nextPendingConnection()
+        client_socket.readyRead.connect(self.onReadyRead)
+        client_socket.disconnected.connect(self.onDisconnected)
 
-            if self.m_clientSockets:
-                print(f"Already connected to a client. Rejecting new connection from {client_socket.peerAddress().toString()}")
-                client_socket.disconnectFromHost()
-                client_socket.closeLater()
-                return
-
-            print(f"Rejected new client from {client_socket.peerAddress().toString()} - already connected")
-            client_socket.readyRead.connect(self.onReadyRead)
-            client_socket.disconnected.connect(self.onDisconnected)
-
-            self.m_clientSockets.append(client_socket)
-            print(f"New client connected from {client_socket.peerAddress().toString()}")
-            self.m_backend.setConnectionState("connected")
+        self.m_clientSockets.append(client_socket)
+        print(f"New client connected from {client_socket.peerAddress().toString()}")
+        self.m_backend.setConnectionState("connected")
 
     @Slot()
     def onReadyRead(self):
@@ -294,13 +267,13 @@ class TCPManager(QObject):
 
     @Slot()
     def onDisconnected(self):
-        self.m_backend.setConnectionState("disconnected")
+        # self.m_backend.setConnectionState(StatusClass.ConnectionState.TCP_DISCONNECTED)
         socket = self.sender()
         if not socket:
             return
 
         print(f"Client disconnected: {socket.peerAddress().toString()}")
-        self.m_backend.connectionClosed.emit()
 
         if socket in self.m_clientSockets:
             self.m_clientSockets.remove(socket)
+        socket.deleteLater()
