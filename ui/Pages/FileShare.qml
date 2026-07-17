@@ -1,10 +1,11 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "../Components"
+import "../Components/Overlay"
 
 Rectangle {
     property var selectedFiles_Ids : []
-
+    property string peerName: ""
 
     anchors.fill: parent
     color: "#141414"
@@ -12,6 +13,9 @@ Rectangle {
     Column {
         anchors.centerIn: parent
         spacing: 20
+
+        ConnectedPeerBar {}
+
 
         Rectangle {
             width: 450
@@ -93,7 +97,7 @@ Rectangle {
 
                     FilesOverlayItem {
                         id: importButton
-                        source: "../../assets/icons/plus-icon.png"
+                        source: "../../../assets/icons/plus-icon.png"
 
                         // 1. Ensure it shrinks towards the center
                         transformOrigin: Item.Center
@@ -118,7 +122,7 @@ Rectangle {
 
                     FilesOverlayItem {
                         id: trashButton
-                        source: "../../assets/icons/trash-icon.png"
+                        source: "../../../assets/icons/trash-icon.png"
 
                         transformOrigin: Item.Center
                         scale: trashArea.pressed ? 0.7 : 1.0
