@@ -52,7 +52,10 @@ Window {
 
              if (state === "connected") {
                 loader.source = "FileShare.qml"
-            }
+            } else if (state === "disconnected"){
+                loader.source = ""
+                backend.clearModel()
+             }
         }
 
         function onActivityStateUpdated(state) {
@@ -69,7 +72,7 @@ Window {
             senderName = device_name
 
             if (packetType === "CONNECTION_REQUEST")  {
-                overlay.source = "../Components/ConnectionRequest.qml"
+                overlay.source = "../Components/Overlay/ConnectionRequest.qml"
             }
             if (packetType === "CONNECTION_ACCEPTED") {
                 backend.tcpConnectOnServer(senderIp)
@@ -84,6 +87,11 @@ Window {
         id: loader
         anchors.fill: parent
         z: 3
+        onLoaded: {
+            item.peerName = senderName
+            console.log(item.peerName)
+        }
+
     }
 
     Loader {
