@@ -294,7 +294,7 @@ class TCPManager(QObject):
 
     @Slot()
     def onDisconnected(self):
-        # self.m_backend.setConnectionState(StatusClass.ConnectionState.TCP_DISCONNECTED)
+        self.m_backend.setConnectionState("disconnected")
         socket = self.sender()
         if not socket:
             return
