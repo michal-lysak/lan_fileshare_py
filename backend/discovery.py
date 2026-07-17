@@ -99,7 +99,7 @@ class DiscoveryWorker(QObject):
 
             name = parts[1]
 
-            if message.startswith("DISCOVER"): #and name != my_hostname
+            if message.startswith("DISCOVER") and name != my_hostname:
                 if ip not in self.devices:
                     self.devices.add(ip)
                     print(f"Found device: {name} -> {ip}")
@@ -120,3 +120,4 @@ class DiscoveryWorker(QObject):
                 self.packetReceived_Signal.emit(ip, packet_type, device_name or "")
             else:
                 print("Ignored: Discovered myself")
+
