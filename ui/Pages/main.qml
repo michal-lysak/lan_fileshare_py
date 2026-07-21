@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 
 import "../Components"
+
 Window {
     width: 640; minimumWidth: 640; maximumWidth: 640
     height: 480; minimumHeight: 480; maximumHeight: 480
@@ -69,7 +70,7 @@ Window {
             senderName = device_name
 
             if (packetType === "CONNECTION_REQUEST")  {
-                overlay.source = "../Components/ConnectionRequest.qml"
+                overlay.source = "../Components/Overlay/ConnectionRequest.qml"
             }
             if (packetType === "CONNECTION_ACCEPTED") {
                 backend.tcpConnectOnServer(senderIp)
