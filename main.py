@@ -66,6 +66,14 @@ if __name__ == "__main__":
     backend.conRequest_Signal.connect(worker.conRequest)
     backend.sendPacket.connect(worker.sendPacket)
 
+    # Managing connection
+    backend.closeConnection.connect(tcpManager.closeConnection)
+    
+
+    # Cleaning model
+    backend.clearModel.connect(fileModel.clearModel)
+
+
     thread.start()
     tcpThread.start()
     engine.rootContext().setContextProperty("backend", backend)

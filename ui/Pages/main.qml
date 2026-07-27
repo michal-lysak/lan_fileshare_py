@@ -53,7 +53,10 @@ Window {
 
              if (state === "connected") {
                 loader.source = "FileShare.qml"
-            }
+            } else if (state === "disconnected"){
+                loader.source = ""
+                backend.clearModel()
+             }
         }
 
         function onActivityStateUpdated(state) {
@@ -85,6 +88,11 @@ Window {
         id: loader
         anchors.fill: parent
         z: 3
+        onLoaded: {
+            item.peerName = senderName
+            console.log(item.peerName)
+        }
+
     }
 
     Loader {

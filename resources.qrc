@@ -8,5 +8,6 @@
         <file>ui/Components/Overlay/FilesOverlayItem.qml</file>
         <file>ui/Components/Overlay/FilesOverlayBar.qml</file>
         <file>assets/icons/mingcute_computer-fill.svg</file>
+        <file>ui/Components/ConnectedPeerBar.qml</file>
     </qresource>
 </RCC>

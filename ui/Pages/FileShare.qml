@@ -5,7 +5,7 @@ import "../Components/Overlay"
 
 Rectangle {
     property var selectedFiles_Ids : []
-
+    property string peerName: ""
 
     anchors.fill: parent
     color: "#141414"
@@ -13,6 +13,9 @@ Rectangle {
     Column {
         anchors.centerIn: parent
         spacing: 20
+
+        ConnectedPeerBar {}
+
 
         Rectangle {
             width: 450
