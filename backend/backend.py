@@ -34,6 +34,16 @@ class Backend(QObject):
     # imported files signal
     selectedFilesChanged = Signal()
 
+    # Managing connection
+    # from QML ->
+    closeConnection = Signal()
+    # to -> Backend
+    connectionClosed = Signal()
+
+    # Clearing model(FileListModel)
+    clearModel = Signal()
+
+
 
     def getConnectionState(self):
         return self._connectionState
