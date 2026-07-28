@@ -48,21 +48,43 @@ class TCPManager(QObject):
         #     return
         print("Trying to connect on server")
         print(f"connecting IP: {ip}")
-    
+
         port = 45454
         if not self.tcpSocket:
             self.tcpSocket = QTcpSocket(self)
             self.tcpSocket.readyRead.connect(self.onReadyRead)
             self.tcpSocket.disconnected.connect(self.onDisconnected)
-            
+
             # Using a lambda/local function for the connected signal
             def on_connected():
                 print("Connected to server!")
                 self.m_backend.setConnectionState("connected")
-            
+
             self.tcpSocket.connected.connect(on_connected)
 
         self.tcpSocket.connectToHost(QHostAddress(ip), port)
+
+    def closeConnection(self):
+        closed_any = False
+
+        # Check client side, if we are connected as a client
+        if self.tcpSocket and self.tcpSocket.state() == QTcpSocket.SocketState.ConnectedState:
+            print("Closing TCP connection...")
+            self.tcpSocket.disconnectFromHost()
+            self.m_backend.setConnectionState("disconnected")
+            closed_any = True
+
+        # Check server side, if we are connected as a server
+        if self.m_clientSockets:
+            for sock in self.m_clientSockets:
+                if sock.state() == QTcpSocket.SocketState.ConnectedState:
+                    print(f"Closing TCP connection with client: {sock.peerAddress().toString()}")
+                    sock.disconnectFromHost()
+                    closed_any = True
+
+        if closed_any:
+            self.m_backend.setConnectionState("disconnected")
+
 
     def sendData(self):
         print("Sending data...")
@@ -72,7 +94,7 @@ class TCPManager(QObject):
 
         for row in range(rows):
             file = self.fileModel._files[row]
-            self.sendFile(file["filePath"], row)  # Assuming you have a way to get the index of the file in the model    
+            self.sendFile(file["filePath"], row)  # Assuming you have a way to get the index of the file in the model
         print(f"Files to send: {len(files)}")
         row = self.fileModel.rowCount()
 
@@ -109,7 +131,7 @@ class TCPManager(QObject):
 
             print("Not connected to any host.")
             return
-        
+
         file_path = QUrl(fileUrl).toLocalFile()
         file = QFile(file_path)
         if not file.open(QIODevice.OpenModeFlag.ReadOnly):
@@ -128,7 +150,7 @@ class TCPManager(QObject):
         header_block = QByteArray()
         header_stream = QDataStream(header_block, QIODevice.OpenModeFlag.WriteOnly)
         header_stream.setVersion(QDataStream.Version.Qt_6_9)
-        
+
         # Explicitly write fields (Replaces C++ `headerStream << header;`)
         header_stream.writeString(file_name)
         header_stream.writeInt64(file_size)
@@ -151,7 +173,7 @@ class TCPManager(QObject):
         while not file.atEnd():
             buffer = file.read(chunk_size)
             active_socket.write(buffer)
-            
+
             index = self.fileModel.index(row, 0)
 
             current = self.fileModel.data(index, FileRoles.sendedRole) or 0
@@ -168,21 +190,26 @@ class TCPManager(QObject):
     # =======================
     @Slot()
     def onNewConnection(self):
-        if self.m_clientSockets:
+        while self.tcpServer.hasPendingConnections():
             # Already have a client, reject the new connection
-            new_socket = self.tcpServer.nextPendingConnection()
-            print(f"Rejected new client from {new_socket.peerAddress().toString()} - already connected")
-            new_socket.disconnectFromHost()
-            new_socket.deleteLater()
-            return
+            client_socket = self.tcpServer.nextPendingConnection()
 
-        client_socket = self.tcpServer.nextPendingConnection()
-        client_socket.readyRead.connect(self.onReadyRead)
-        client_socket.disconnected.connect(self.onDisconnected)
+            if not client_socket:
+                break
 
-        self.m_clientSockets.append(client_socket)
-        print(f"New client connected from {client_socket.peerAddress().toString()}")
-        self.m_backend.setConnectionState("connected")
+            if self.m_clientSockets:
+                print(f"Already connected to a client. Rejecting new connection from {client_socket.peerAddress().toString()}")
+                client_socket.disconnectFromHost()
+                client_socket.closeLater()
+                return
+
+            print(f"Rejected new client from {client_socket.peerAddress().toString()} - already connected")
+            client_socket.readyRead.connect(self.onReadyRead)
+            client_socket.disconnected.connect(self.onDisconnected)
+
+            self.m_clientSockets.append(client_socket)
+            print(f"New client connected from {client_socket.peerAddress().toString()}")
+            self.m_backend.setConnectionState("connected")
 
     @Slot()
     def onReadyRead(self):
@@ -196,7 +223,7 @@ class TCPManager(QObject):
         while True:
             # Step 1: Read header size (4 bytes for qint32)
             if self.expectedHeaderSize == -1:
-                if socket.bytesAvailable() < 4: 
+                if socket.bytesAvailable() < 4:
                     return  # wait for full size
                 self.expectedHeaderSize = in_stream.readInt32()
                 continue
@@ -214,7 +241,7 @@ class TCPManager(QObject):
                 # Deserialize header fields manually
                 self.currentHeader["fileName"] = header_stream.readString()
                 self.currentHeader["fileSize"] = header_stream.readInt64()
-                self.currentHeader["created"] = header_stream.readQVariant() 
+                self.currentHeader["created"] = header_stream.readQVariant()
                 self.currentHeader["mimeType"] = header_stream.readString()
 
                 # Prepare file to save
@@ -222,9 +249,9 @@ class TCPManager(QObject):
                 QDir().mkpath(save_dir)
 
                 save_path = os.path.join(save_dir, self.currentHeader["fileName"])
-                self.currentFile = QFile(save_path) # 
+                self.currentFile = QFile(save_path) #
                 self.currentRow = self.fileModel.addFile(self.currentHeader["fileName"], save_path, self.currentHeader["fileSize"], "incoming")
-                
+
                 if not self.currentFile.open(QIODevice.OpenModeFlag.WriteOnly):
                     print(f"Failed to open file for writing: {save_path}")
                     self._reset_receive_state()
@@ -240,7 +267,7 @@ class TCPManager(QObject):
 
                 remaining = self.currentHeader["fileSize"] - self.bytesReceived
                 bytes_to_read = min(remaining, 64 * 1024)
-                
+
                 chunk = socket.read(bytes_to_read)
 
                 index = self.currentRow
@@ -261,19 +288,19 @@ class TCPManager(QObject):
                 self.currentFile.close()
                 print(f" File received successfully: {self.currentHeader['fileName']}")
                 self.fileModel.setData(self.currentRow, "completed", role=FileRoles.directionRole)
-                
+
                 # Reset state machine for the next potential file
                 self._reset_receive_state()
 
     @Slot()
     def onDisconnected(self):
-        # self.m_backend.setConnectionState(StatusClass.ConnectionState.TCP_DISCONNECTED)
+        self.m_backend.setConnectionState("disconnected")
         socket = self.sender()
         if not socket:
             return
 
         print(f"Client disconnected: {socket.peerAddress().toString()}")
+        self.m_backend.connectionClosed.emit()
 
         if socket in self.m_clientSockets:
             self.m_clientSockets.remove(socket)
-        socket.deleteLater()
